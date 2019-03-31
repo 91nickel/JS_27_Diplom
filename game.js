@@ -70,10 +70,10 @@ class Actor {
         edges.top = this.top;
         edges.bottom = this.bottom;
 
-        edges.left > this.right ? this.right : edges.left;
-        edges.right < this.right ? this.left : edges.right;
-        edges.top > this.bottom ? this.bottom : edges.top;
-        edges.bottom < this.bottom ? this.top : edges.bottom;
+        edges.left = edges.left > this.right ? this.right : edges.left;
+        edges.right = edges.right < this.right ? this.left : edges.right;
+        edges.top = edges.top > this.bottom ? this.bottom : edges.top;
+        edges.bottom = edges.bottom < this.bottom ? this.top : edges.bottom;
 
         return edges;
     }
@@ -99,46 +99,18 @@ class Actor {
 }
 
 class Level {
-    constructor(grid, actors) {
+    constructor(grid = [], actors = []) {
         this.grid = grid;
         this.actors = actors;
         this.status = null;
         this.finishDelay = 1;
-    }
-    get height() {
-        if (this.grid === undefined) {
-            return 0;
-        }
-        return this.grid.length;
-    }
-    get width() {
-        if (this.grid === undefined) {
-            return 0;
-        }
-        let c = 0;
-        for (let i in this.grid) {
-            if (this.grid[c].length < this.grid[i].length) {
-                c = i;
-            }
-        }
-        return this.grid[c].length;
-    }
-    get player() {
-        for (let i of this.actors) {
-            if (i.type === 'player') {
-                return i;
-            }
-        }
+        this.player = actors.find(actor => actor.type === 'player');
+        this.height = grid.length;
+        this.width = grid.reduce(((max, arr) => (arr.length > max) ? arr.length : max), 0);
     }
     //Возвращает true, если свойство status не равно null и finishDelay меньше нуля.
     isFinished() {
-        if (this.status !== null && this.finishDelay < 0) {
-            return true;
-        }
-        if (this.status !== null && this.finishDelay > 0) {
-            return false;
-        }
-        return false;
+        return this.status !== null && this.finishDelay < 0;
     }
     /*
   Определяет, расположен ли какой-то другой движущийся объект в переданной позиции, и если да, вернёт этот объект.
@@ -150,19 +122,10 @@ class Level {
   Возвращает объект Actor, если переданный объект пересекается с ним на игровом поле. Если пересекается с несколькими объектами, вернет первый.
   */
     actorAt(actor) {
-        if (!(actor instanceof Actor)) {
+        if (!actor || !actor instanceof Actor) {
             throw new Error('Передан объект не Actor');
         }
-        if (this.width === 0 && this.height === 0) {
-            return undefined;
-        }
-        for (let row of this.actors) {
-            if (row instanceof Actor) {
-                if (actor.isIntersect(row)) {
-                    return row;
-                }
-            }
-        }
+        return this.actors.find( item => item instanceof Actor && item.isIntersect(actor) );
     }
     /*
     Аналогично методу actorAt определяет, нет ли препятствия в указанном месте. Также этот метод контролирует выход объекта за границы игрового поля.
