@@ -40,15 +40,19 @@ class Actor {
     }
 
     get left() {
+        /*
         if (this.pos.x < 0) {
             return 0;
         }
+        */
         return this.pos.x;
     }
     get top() {
+        /*
         if (this.pos.y < 0) {
             return 0;
         }
+        */
         return this.pos.y;
     }
     get right() {
@@ -96,6 +100,16 @@ class Actor {
         }
         return true;
     }
+    isIntersectGrid(grid) {
+        if (this.edges.left >= actor.edges.right ||
+            this.edges.right <= actor.edges.left ||
+            this.edges.top >= actor.edges.bottom ||
+            this.edges.bottom <= actor.edges.top) {
+            return false;
+        }
+        return true;
+    }
+
 }
 
 class Level {
@@ -133,11 +147,31 @@ class Level {
     Будем считать, что игровое поле слева, сверху и справа огорожено стеной и снизу у него смертельная лава.
     */
     obstacleAt(pos, size) {
-        if (!pos || !pos instanceof Vector || !size || !size instanceof Vector) {
-            throw new Error('Передан объект не Vector');
+        if (!pos || !pos instanceof Vector) {
+            throw new Error('В pos передан не Vector');
+        }
+        if (!size || !size instanceof Vector) {
+            throw new Error('В size передан не Vector');
         }
 
-        return this.grid[pos.x][pos.y];
+        let actor = new Actor(pos, size);
+        let item = new Actor(new Vector(pos.x,pos.y), new Vector(1, 1))
+
+        if (actor.edges.bottom > this.height) {
+            return 'lava';
+        }
+        if (actor.edges.left < 0 || actor.edges.right > this.width || actor.edges.top < 0) {
+            return 'wall';
+        }
+        if (actor.isIntersect(item) && pos.x % 1 !== 0 || pos.y % 1 !== 0) {
+            return 'wall';
+        }
+        if (actor.isIntersect(item) && size.x % 1 !== 0 || size.y % 1 !== 0) {
+            return 'wall';
+        }
+        if (actor.isIntersect(item)) {
+            return this.grid[pos.x][pos.y];
+        }
     }
     /*
     Метод удаляет переданный объект с игрового поля. Если такого объекта на игровом поле нет, не делает ничего.
@@ -154,9 +188,9 @@ class Level {
     Определяет, остались ли еще объекты переданного типа на игровом поле. Принимает один аргумент — тип движущегося объекта, строка. Возвращает true, если на игровом поле нет объектов этого типа (свойство type). Иначе возвращает false.
     */
     noMoreActors(type) {
-        let res = this.actors.find(function (el) {
-            return el.type === type;
-        });
+        if (this.actors.find(el => el.type === type)) {
+            return false;
+        }
         return true;
     }
     /*
