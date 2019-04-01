@@ -45,7 +45,7 @@ class Actor {
             return 0;
         }
         */
-        return this.pos.x;
+        return Math.floor(this.pos.x);
     }
     get top() {
         /*
@@ -53,19 +53,19 @@ class Actor {
             return 0;
         }
         */
-        return this.pos.y;
+        return Math.floor(this.pos.y);
     }
     get right() {
         if (this.pos.x + this.size.x <= 0) {
             return -this.pos.x;
         }
-        return this.pos.x + this.size.x;
+        return Math.ceil(this.pos.x + this.size.x);
     }
     get bottom() {
         if (this.pos.y + this.size.y <= 0) {
             return -this.pos.y;
         }
-        return this.pos.y + this.size.y;
+        return Math.ceil(this.pos.y + this.size.y);
     }
     get edges() {
         let edges = new Object();
@@ -100,16 +100,15 @@ class Actor {
         }
         return true;
     }
-    isIntersectGrid(grid) {
-        if (this.edges.left >= actor.edges.right ||
-            this.edges.right <= actor.edges.left ||
-            this.edges.top >= actor.edges.bottom ||
-            this.edges.bottom <= actor.edges.top) {
-            return false;
+    isIntersectGrid(actor, grid) {
+        for (let i in grid) {
+            for (let k in grid[i]) {
+                if (i > actor.edges.top && i < actor.edges.bottom && k > actor.edges.left && k < actor.edges.right) {
+                    return grid[i][k];
+                }
+            }
         }
-        return true;
     }
-
 }
 
 class Level {
@@ -153,25 +152,26 @@ class Level {
         if (!size || !size instanceof Vector) {
             throw new Error('В size передан не Vector');
         }
+        const leftWall = Math.floor(pos.x);
+        const rightWall = Math.ceil(pos.x + size.x);
+        const topWall = Math.floor(pos.y);
+        const lava = Math.ceil(pos.y + size.y);
 
-        let actor = new Actor(pos, size);
-        let item = new Actor(new Vector(pos.x,pos.y), new Vector(1, 1))
-
-        if (actor.edges.bottom > this.height) {
+        if (leftWall < 0 || rightWall > this.width || topWall < 0) {
+            return 'wall';
+        }
+        if (lava > this.height) {
             return 'lava';
         }
-        if (actor.edges.left < 0 || actor.edges.right > this.width || actor.edges.top < 0) {
-            return 'wall';
+
+        for (let i in this.grid) {
+            for (let k in this.grid[i]) {
+                if (i >= topWall && i < lava && k >= leftWall && k <= rightWall) {
+                    return this.grid[i][k];
+                }
+            }
         }
-        if (actor.isIntersect(item) && pos.x % 1 !== 0 || pos.y % 1 !== 0) {
-            return 'wall';
-        }
-        if (actor.isIntersect(item) && size.x % 1 !== 0 || size.y % 1 !== 0) {
-            return 'wall';
-        }
-        if (actor.isIntersect(item)) {
-            return this.grid[pos.x][pos.y];
-        }
+
     }
     /*
     Метод удаляет переданный объект с игрового поля. Если такого объекта на игровом поле нет, не делает ничего.
