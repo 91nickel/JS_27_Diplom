@@ -213,15 +213,69 @@ class Level {
         }
     }
 }
-class Player {
-    constructor(){
 
+class LevelParser {
+    constructor(dict) {
+        this.dict = dict;
+    }
+    actorFromSymbol(s) {
+        if (!s || typeof s !== 'string') {
+            return;
+        }
+        if (typeof this.dict[s] === 'function') {
+          if (new this.dict[s]() instanceof Actor) {
+            return this.dict[s];
+          }
+        }
+      }
+        obstacleFromSymbol(s) {
+        if (s === 'x') {
+            return 'wall';
+        }
+        if (s === '!') {
+            return 'lava';
+        }
+    }
+    createGrid(array = []) {
+        let grid = [];
+        for (let i in array) {
+            grid.push(array[i].split(''));
+            grid[i] = grid[i].map((el) => this.obstacleFromSymbol(el));
+        }
+        return grid;
+    }
+    createActors(array = []) {
+        let actors = [];
+        let result = [];
+        for (let i in array) {
+            actors.push(array[i].split(''));
+            for (let n in actors[i]) {
+                actors[i][n] = this.actorFromSymbol(actors[i][n]);
+                if (typeof actors[i][n] === 'function') {
+                    result.push(new actors[i][n](new Vector(i, n)));
+                };
+            }
+        }
+        return result;
+    }
+    parse(array = []) {
+        return new Level(this.createGrid(array), this.createActors(array))
+    }
+}
+
+class Player {
+    constructor(pos) {
+        this.pos.x = pos.x;
+        this.pos.y = pos.y - 0.5;
+        this.size.x = 0.8;
+        this.size.y = 1.5;
+        this.type = 'player';
     }
 }
 
 const grid = [
     new Array(3),
     ['wall', 'wall', 'lava']
-    ];
-    const level = new Level(grid);
-    runLevel(level, DOMDisplay);
+];
+const level = new Level(grid);
+runLevel(level, DOMDisplay);
