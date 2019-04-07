@@ -237,14 +237,12 @@ class LevelParser {
         }
     }
     createGrid(array = []) {
-        let grid = [];
-        for (let i in array) {
-            grid.push(array[i].split(''));
-            grid[i] = grid[i].map((el) => this.obstacleFromSymbol(el));
-        }
-        return grid;
-    }
-    createActors(array = []) {
+        return array.map((el) => el.split(''))
+          .map((el) =>
+            el.map((el1) =>
+              this.obstacleFromSymbol(el1)));
+      }
+        createActors(array = []) {
         if (array = []){
             return [];
         }
