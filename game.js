@@ -218,17 +218,17 @@ class LevelParser {
     constructor(dict) {
         this.dict = dict;
     }
-    actorFromSymbol(s) {
-        if (!s || typeof s !== 'string') {
+    actorFromSymbol(s = []) {
+        if (s === [] || typeof s !== 'string') {
             return;
         }
         if (typeof this.dict[s] === 'function') {
-          if (new this.dict[s]() instanceof Actor) {
-            return this.dict[s];
-          }
+            if (new this.dict[s]() instanceof Actor) {
+                return this.dict[s];
+            }
         }
-      }
-        obstacleFromSymbol(s) {
+    }
+    obstacleFromSymbol(s) {
         if (s === 'x') {
             return 'wall';
         }
@@ -245,20 +245,23 @@ class LevelParser {
         return grid;
     }
     createActors(array = []) {
-        let actors = [];
         let result = [];
-        for (let i in array) {
-            actors.push(array[i].split(''));
-            for (let n in actors[i]) {
-                actors[i][n] = this.actorFromSymbol(actors[i][n]);
-                if (typeof actors[i][n] === 'function') {
-                    result.push(new actors[i][n](new Vector(i, n)));
-                };
-            }
-        }
+        array = array.map((el) => el.split(''));
+        array.forEach((el, i) => {
+          el.forEach((el1, i1) => {
+            let actor = this.actorFromSymbol(el1);
+            if (typeof actor === 'function') {
+              actor = new actor(new Vector(i1, i));
+              if (actor instanceof Actor) {
+                result.push(actor);
+              }
+            };
+          })
+        });
+        console.log(result);
         return result;
-    }
-    parse(array = []) {
+      }
+        parse(array = []) {
         return new Level(this.createGrid(array), this.createActors(array))
     }
 }
