@@ -245,6 +245,9 @@ class LevelParser {
         return grid;
     }
     createActors(array = []) {
+        if (array = []){
+            return [];
+        }
         let result = [];
         array = array.map((el) => el.split(''));
         array.forEach((el, i) => {
