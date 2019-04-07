@@ -215,7 +215,7 @@ class Level {
 }
 
 class LevelParser {
-    constructor(dict) {
+    constructor(dict = []) {
         this.dict = dict;
     }
     actorFromSymbol(s = []) {
@@ -238,31 +238,27 @@ class LevelParser {
     }
     createGrid(array = []) {
         return array.map((el) => el.split(''))
-          .map((el) =>
-            el.map((el1) =>
-              this.obstacleFromSymbol(el1)));
-      }
-        createActors(array = []) {
-        if (array = []){
-            return [];
-        }
+            .map((el) =>
+                el.map((el1) =>
+                    this.obstacleFromSymbol(el1)));
+    }
+    createActors(array = []) {
         let result = [];
         array = array.map((el) => el.split(''));
         array.forEach((el, i) => {
-          el.forEach((el1, i1) => {
-            let actor = this.actorFromSymbol(el1);
-            if (typeof actor === 'function') {
-              actor = new actor(new Vector(i1, i));
-              if (actor instanceof Actor) {
-                result.push(actor);
-              }
-            };
-          })
+            el.forEach((el1, i1) => {
+                let actor = this.actorFromSymbol(el1);
+                if (typeof actor === 'function') {
+                    actor = new actor(new Vector(i1, i));
+                    if (actor instanceof Actor) {
+                        result.push(actor);
+                    }
+                };
+            })
         });
-        console.log(result);
         return result;
-      }
-        parse(array = []) {
+    }
+    parse(array = []) {
         return new Level(this.createGrid(array), this.createActors(array))
     }
 }
